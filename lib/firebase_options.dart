@@ -66,6 +66,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '412350863027',
     projectId: 'auth2-a4c3e',
     storageBucket: 'auth2-a4c3e.appspot.com',
+    androidClientId: '412350863027-dfithg8h0668v1h52h9hsqf9602k1r40.apps.googleusercontent.com',
+    iosClientId: '412350863027-65gdcskg21hjetn81i6avfsbelrob5jl.apps.googleusercontent.com',
     iosBundleId: 'com.example.auth2',
   );
 
@@ -75,6 +77,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '412350863027',
     projectId: 'auth2-a4c3e',
     storageBucket: 'auth2-a4c3e.appspot.com',
+    androidClientId: '412350863027-dfithg8h0668v1h52h9hsqf9602k1r40.apps.googleusercontent.com',
+    iosClientId: '412350863027-kkkht634utqqick2guhihvfisk20krgs.apps.googleusercontent.com',
     iosBundleId: 'com.example.auth2.RunnerTests',
   );
 }

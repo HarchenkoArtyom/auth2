@@ -10,7 +10,6 @@ import 'firebase_options.dart';
 
 class HomePage extends StatelessWidget {
   final String email;
-
   HomePage({required this.email});
 
   @override
@@ -51,7 +50,7 @@ class MyApp extends StatelessWidget {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.web,
   );
   runApp(MyApp());
 }
