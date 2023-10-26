@@ -50,6 +50,7 @@ class DefaultFirebaseOptions {
     projectId: 'auth2-a4c3e',
     authDomain: 'auth2-a4c3e.firebaseapp.com',
     storageBucket: 'auth2-a4c3e.appspot.com',
+    measurementId: 'G-MZHN7CSBY0',
   );
 
   static const FirebaseOptions android = FirebaseOptions(

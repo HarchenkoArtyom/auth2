@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:developer';
@@ -6,6 +7,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
 import 'firebase_options.dart';
+import 'package:http/http.dart' as http;
+
+const List<String> scopes = <String>[
+  'email',
+  'openid',
+  'https://www.googleapis.com/auth/contacts.readonly',
+  "https://www.googleapis.com/auth/userinfo.profile"
+];
+
+GoogleSignIn _googleSignIn = GoogleSignIn(
+  // Optional clientId
+  // clientId: 'your-client_id.apps.googleusercontent.com',
+  scopes: scopes,
+);
 
 var logger = Logger(
   printer: PrettyPrinter(),
@@ -17,17 +32,40 @@ var loggerNoStack = Logger(
 
 class AuthService {
   signInGoogle() async {
-    final GoogleSignInAccount? gUser = await GoogleSignIn(
-      scopes: [
-        'email',
-        'openid',
-        'https://www.googleapis.com/auth/contacts.readonly',
-        "https://www.googleapis.com/auth/userinfo.profile"
-      ],
-    ).signIn();
+    //
+    await _googleSignIn.signIn();
 
+    final GoogleSignInAccount? gUser = await _googleSignIn.signInSilently();
+
+    //_googleSignIn.signIn();
+    print('gUser id ' + gUser!.id);
+    //final GoogleSignInAuthentication gAuth = await gUser!.authentication;
     final GoogleSignInAuthentication gAuth = await gUser!.authentication;
-    String? token = gAuth.accessToken;
+    print('object-----------------------2');
+
+    final String serverUrl = 'https://045a-37-214-3-179.ngrok-free.app/login';
+    final url = Uri.parse(serverUrl);
+    final response = await http.post(url, headers: {
+      'idToken': gAuth.idToken as String,
+      'email': gUser.email,
+    });
+
+    if (response.statusCode == 200) {
+      print(response.body);
+      if (response.body == 'true') {
+        print("true");
+        logger.d("${gAuth.idToken}");
+        final credential = GoogleAuthProvider.credential(
+            accessToken: gAuth.accessToken, idToken: gAuth.idToken);
+        final res = FirebaseAuth.instance.signInWithCredential(credential);
+        return await res;
+      } else {
+        print('error');
+      }
+    } else {
+      throw Exception('Failed to login');
+    }
+
     /*
     String email = '2';
     final url = Uri.parse('http://localhost:8080/login');
@@ -51,28 +89,16 @@ class AuthService {
       return await res;
     } else {
       print('response.body${response.body}');
-    } String? token = gAuth.accessToken;*/
-
-    logger.d("${gAuth.idToken}");
-    final credential = GoogleAuthProvider.credential(
-        accessToken: gAuth.accessToken, idToken: gAuth.idToken);
-    print('res.toString() ' +
-        GoogleAuthProvider.credential(
+    } String? token = gAuth.accessToken;
+        print('res.toString() ' +
+            GoogleAuthProvider.credential(
                 accessToken: gAuth.accessToken, idToken: gAuth.idToken)
-            .toString());
-    print('serverAuthCode ${gUser.serverAuthCode}');
-    print('id ${gUser.id}');
-    print('authHeaders ${gUser.authHeaders}');
-    print('${gAuth.idToken}');
-    print('accessToken ${gAuth.accessToken}');
-    print('token ${credential.token}');
-    final f = AuthCredential(
-        providerId: 'google.com',
-        signInMethod: 'google.com',
-        token: null,
-        accessToken: gAuth.accessToken);
-
-    final res = FirebaseAuth.instance.signInWithCredential(f);
-    return await res;
+                .toString());
+        print('serverAuthCode ${gUser.serverAuthCode}');
+        print('id ${gUser.id}');
+        print('authHeaders ${gUser.authHeaders}');
+        print('${gAuth.idToken}');
+        print('accessToken ${gAuth.accessToken}');
+        print('token ${credential.token}');*/
   }
 }
