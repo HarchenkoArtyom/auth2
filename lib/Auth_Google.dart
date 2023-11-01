@@ -4,10 +4,12 @@ import 'dart:io';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
 import 'firebase_options.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 
 const List<String> scopes = <String>[
   'email',
@@ -43,16 +45,25 @@ class AuthService {
     final GoogleSignInAuthentication gAuth = await gUser!.authentication;
     print('object-----------------------2');
 
-    final String serverUrl = 'https://045a-37-214-3-179.ngrok-free.app/login';
+    SecurityContext securityContext = SecurityContext.defaultContext;
+    final String serverUrl = 'https://f2d1-37-214-3-179.ngrok-free.app/login';
     final url = Uri.parse(serverUrl);
-    final response = await http.post(url, headers: {
-      'idToken': gAuth.idToken as String,
-      'email': gUser.email,
-    });
+    final ByteData crtData = await rootBundle.load('assets/cert.pem');
+    securityContext.setTrustedCertificatesBytes(crtData.buffer.asUint8List());
+// Load the SSL certificate for the server
+    //securityContext.setTrustedCertificates('assets/cert.pem');
 
-    if (response.statusCode == 200) {
-      print(response.body);
-      if (response.body == 'true') {
+// Make the HTTPS request to the server
+    final response = await HttpClient(context: securityContext).postUrl(url);
+    response.headers.set('idToken', gAuth.idToken as String);
+    response.headers.set('email', gUser.email);
+
+    HttpClientResponse httpResponse = await response.close();
+    String responseBody = await httpResponse.transform(utf8.decoder).join();
+
+    if (httpResponse.statusCode == 200) {
+      print(responseBody);
+      if (responseBody == 'true') {
         print("true");
         logger.d("${gAuth.idToken}");
         final credential = GoogleAuthProvider.credential(
